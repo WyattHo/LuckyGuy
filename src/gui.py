@@ -1,4 +1,3 @@
-from copy import copy
 import csv
 import main
 import tkinter as tk
