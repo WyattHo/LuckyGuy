@@ -1,5 +1,5 @@
 import csv
-import main
+import kernel
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import font
@@ -55,7 +55,7 @@ def readCsv():
 def Draw():
     totalNum = len(treeviewRead.get_children())
     try:
-        main.Draw(totalNum=totalNum, usedIdxList=usedIdxList)
+        kernel.Draw(totalNum=totalNum, usedIdxList=usedIdxList)
     except Exception as e:
         tk.messagebox.showerror("Error", e.args[0])
     else:
