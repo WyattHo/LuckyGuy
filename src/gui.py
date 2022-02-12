@@ -12,9 +12,11 @@ def openDir():
 
 
 def readCsv():
+    # Clear items first
     for item in treeviewRead.get_children():
         treeviewRead.delete(item)
 
+    # Read csv
     tgtFileName = dirVariable.get()
     with open(tgtFileName, 'r') as f:
         csvData = csv.DictReader(f)
@@ -31,11 +33,6 @@ def readCsv():
 
                 if dataWidth > maxWidths[fieldName]:
                     maxWidths[fieldName] = dataWidth
-        
-    with open(tgtFileName, 'r') as f:
-        csvData = csv.DictReader(f)
-        fieldNames = csvData.fieldnames
-        treeviewRead['columns'] = fieldNames
 
         # Set fields
         for fieldName in fieldNames:
@@ -45,6 +42,11 @@ def readCsv():
         # Reset scrollbars
         scrollBarVerL.config(command=treeviewRead.yview)
         scrollBarHorL.config(command=treeviewRead.xview)
+        
+        # The entire file has been iterated at the first time,
+        # so it is needed to seek to the beginning.
+        f.seek(0)
+        next(csvData)
 
         # Insert values
         for rowIdx, rowData in enumerate(csvData):
@@ -54,18 +56,20 @@ def readCsv():
 
 def Draw():
     totalNum = len(treeviewRead.get_children())
+
     try:
         kernel.Draw(totalNum=totalNum, usedIdxList=usedIdxList)
     except Exception as e:
         tk.messagebox.showerror("Error", e.args[0])
+        insertValues = False
     else:
         luckyGuy = usedIdxList[-1]
+        insertValues = True
+
+    # Set fields for treeviewDraw
+    if treeviewDraw['columns'] != treeviewRead['columns']:
         treeviewDraw['columns'] = treeviewRead['columns']
-
-        # Block in treeviewRead
-        treeviewRead.tag_configure('1', background='#E8E8E8', foreground='silver')
-
-        # Set fields
+    
         for fieldName in treeviewRead['columns']:
             treeviewDraw.column(fieldName, anchor=tk.W, width=10*maxWidths[fieldName], stretch=0)
             treeviewDraw.heading(fieldName, text=fieldName, anchor=tk.W)
@@ -74,10 +78,11 @@ def Draw():
         scrollBarVerR.config(command=treeviewDraw.yview)
         scrollBarHorR.config(command=treeviewDraw.xview)
 
-        # Insert values
+    # Insert values
+    if insertValues:
         for idx, item in enumerate(treeviewRead.get_children()):
             if idx == luckyGuy:
-                values = treeviewRead.item(item)['values']
+                values = treeviewRead.item(item, 'values')
                 treeviewDraw.insert(parent='', index=0, values=values, tags=str(idx))
 
 
